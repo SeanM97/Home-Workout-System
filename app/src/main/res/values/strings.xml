@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Home Workout System</string>
+    <string name="edit_message">Enter a message</string>
+    <string name="button_send">Send</string>
+    <string name="view_goals">View Goals</string>
+    <string name="add_goals">Add Goals</string>
+    <string name="view_progress">View Progress</string>
+    <string-array name="add_goals">
+        <item>Weight (lbs) (Smart Scale)</item>
+        <item>Number of Steps Taken (IMU)</item>
+        <item>Duration of Walk in Minutes (IMU)</item>
+        <item>Number of Reps (KINECT)</item>
+        <item>Number of Jumping Jacks (KINECT)</item>
+        <item>Custom</item>
+    </string-array>
+    <string name="deadline">Deadline</string>
+    <string name="set_goal">Set Goal</string>
+</resources>
