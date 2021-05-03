@@ -1,7 +1,13 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+
+    //id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.0'
 }
+
+//apply plugin: 'kotlinx-serialization'
+//apply plugin: 'kotlin-multiplatform' // or 'kotlin-multiplatform' for multiplatform projects
+//apply plugin: 'kotlinx-serialization'
 
 android {
     compileSdkVersion 30
@@ -33,6 +39,11 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.code.gson:gson:2.8.6'
+    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
+    //implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0"
+
+    implementation 'com.android.volley:volley:1.2.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.2.0'
