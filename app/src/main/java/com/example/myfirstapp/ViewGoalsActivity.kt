@@ -3,10 +3,7 @@ package com.example.myfirstapp
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import android.widget.Adapter
-import android.widget.ArrayAdapter
-import android.widget.CalendarView
-import android.widget.Spinner
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -15,7 +12,6 @@ import java.io.InputStream
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 class ViewGoalsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,9 +33,9 @@ class ViewGoalsActivity : AppCompatActivity() {
 
         //val tv12 = findViewById<TextView>(com.example.myfirstapp.R.id.textView12)
 
-        val inputStream: InputStream =
-            File(getApplicationContext().filesDir, "goals.json").inputStream()
-        val inputString = inputStream.bufferedReader().use { it.readText() }
+        //val inputStream: InputStream =
+        //    File(getApplicationContext().filesDir, GOALS_FILE).inputStream()
+        //val inputString = inputStream.bufferedReader().use { it.readText() }
         //tv12.setText(inputString)
 
         var goals: ArrayList<Goal>
@@ -47,13 +43,13 @@ class ViewGoalsActivity : AppCompatActivity() {
 
         val gson = Gson()
 
-        // Check if goals.json exists
-        val file = File(getApplicationContext().filesDir, "goals.json");
+        // Check if GOALS_FILE exists
+        val file = File(getApplicationContext().filesDir, GOALS_FILE);
         //file.readLines()
         if (file.exists()) {
             // Exists, get json data from it
             val inputStream: InputStream =
-                File(getApplicationContext().filesDir, "goals.json").inputStream()
+                File(getApplicationContext().filesDir, GOALS_FILE).inputStream()
             val inputString = inputStream.bufferedReader().use { it.readText() }
             val myType = object : TypeToken<List<Goal>>() {}.type
             goals = gson.fromJson<ArrayList<Goal>>(
@@ -65,8 +61,9 @@ class ViewGoalsActivity : AppCompatActivity() {
             goals = ArrayList<Goal>()
         }
 
+        val c = findViewById<CalendarView>(R.id.calendarView2)
+
         if (goals.size > 0) {
-            val c = findViewById<CalendarView>(R.id.calendarView2)
 
             // Find minimum date a goal was set so user can't go too far back in calendar
             var earliestDate: Long = 9223372036854775807 // max value that long can store
@@ -84,7 +81,6 @@ class ViewGoalsActivity : AppCompatActivity() {
 
             // get a calendar instance
             val calendar = Calendar.getInstance()
-
 
             // set this date as calendar view selected date
             c.date = calendar.timeInMillis
@@ -211,6 +207,14 @@ class ViewGoalsActivity : AppCompatActivity() {
                         goalsInSpinner.add(spinnerString)
                     }
                 }
+
+                if (goalsInSpinner.size == 0) {
+                    spinner.visibility = View.INVISIBLE
+                }
+                else {
+                    spinner.visibility = View.VISIBLE
+                }
+
                 val jsonOutput = gson.toJson(goalsToDisplay)
                 //tv12.setText(jsonOutput)
 
@@ -229,6 +233,14 @@ class ViewGoalsActivity : AppCompatActivity() {
                 // tv12.setText(dateString)
             }
         }
+        else {
+            spinner.visibility = View.INVISIBLE
+            c.visibility = View.INVISIBLE
+            val btn = findViewById<Button>(com.example.myfirstapp.R.id.deleteGoal)
+            btn.visibility = View.INVISIBLE
+            val tv = findViewById<TextView>(com.example.myfirstapp.R.id.textView10)
+            tv.text = "No Goals"
+        }
     }
 
     fun deleteGoal(v: View) {
@@ -237,11 +249,11 @@ class ViewGoalsActivity : AppCompatActivity() {
         var goals: ArrayList<Goal>
         val gson = Gson()
 
-        // Check if goals.json exists
-        val file =  File(getApplicationContext().filesDir, "goals.json");
+        // Check if GOALS_FILE exists
+        val file =  File(getApplicationContext().filesDir, GOALS_FILE);
         if(file.exists()) {
                 // Exists, get json data from it
-                val inputStream: InputStream = File(getApplicationContext().filesDir, "goals.json").inputStream()
+                val inputStream: InputStream = File(getApplicationContext().filesDir, GOALS_FILE).inputStream()
                 val inputString = inputStream.bufferedReader().use { it.readText() }
                 val myType = object : TypeToken<List<Goal>>() {}.type
                 goals = gson.fromJson<ArrayList<Goal>>(inputString, myType) // convert from json to Goals array
@@ -251,19 +263,20 @@ class ViewGoalsActivity : AppCompatActivity() {
         goals = ArrayList<Goal>()
         }
 
-        var goalIndices = ArrayList<Int>()
-        var goalsToDisplay = ArrayList<Goal>()
-        var goalsInSpinner: ArrayList<String> = ArrayList<String>()
-        for (i in goals.indices) {
+        if (goals.size > 0) {
+            var goalIndices = ArrayList<Int>()
+            var goalsToDisplay = ArrayList<Goal>()
+            var goalsInSpinner: ArrayList<String> = ArrayList<String>()
+            for (i in goals.indices) {
 
-            val sdf = SimpleDateFormat("MM/dd/yyyy")
-            val selectedDate: String = sdf.format(Date(c.getDate()))
-            val arrayDate: String = sdf.format(Date(goals.get(i).date))
+                val sdf = SimpleDateFormat("MM/dd/yyyy")
+                val selectedDate: String = sdf.format(Date(c.getDate()))
+                val arrayDate: String = sdf.format(Date(goals.get(i).date))
 
-            if (selectedDate.equals(arrayDate)) {
-                //goalsToDisplay.add(goals.get(i))
-                goalIndices.add(i)
-                /*
+                if (selectedDate.equals(arrayDate)) {
+                    //goalsToDisplay.add(goals.get(i))
+                    goalIndices.add(i)
+                    /*
                 var spinnerString: String = ""
                 if (goals.get(i).goalMet) {
                     spinnerString = "[COMPLETED] "
@@ -295,20 +308,21 @@ class ViewGoalsActivity : AppCompatActivity() {
                 }
                 */
 
+                }
             }
+
+            goals.removeAt(goalIndices.get(spinner.getSelectedItemPosition()))
+
+            val jsonOutput = gson.toJson(goals)
+
+
+            val filename = GOALS_FILE
+            openFileOutput(filename, Context.MODE_PRIVATE).use {
+                it.write(jsonOutput.toByteArray())
+            }
+
+            finish();
+            startActivity(getIntent());
         }
-
-        goals.removeAt(goalIndices.get(spinner.getSelectedItemPosition()))
-
-        val jsonOutput = gson.toJson(goals)
-
-
-        val filename = "goals.json"
-        openFileOutput(filename, Context.MODE_PRIVATE).use {
-            it.write(jsonOutput.toByteArray())
-        }
-
-        finish();
-        startActivity(getIntent());
     }
 }

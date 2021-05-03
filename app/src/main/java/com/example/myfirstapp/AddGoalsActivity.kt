@@ -101,12 +101,12 @@ class AddGoalsActivity : AppCompatActivity() { // TimePickerDialog.OnTimeSetList
 
             val gson = Gson()
 
-            // Check if goals.json exists
-            val file =  File(getApplicationContext().filesDir, "goals.json");
+            // Check if GOALS_FILE exists
+            val file =  File(getApplicationContext().filesDir, GOALS_FILE);
             file.readLines()
             if(file.exists()) {
                 // Exists
-                val inputStream: InputStream = File(getApplicationContext().filesDir, "goals.json").inputStream()
+                val inputStream: InputStream = File(getApplicationContext().filesDir, GOALS_FILE).inputStream()
                 val inputString = inputStream.bufferedReader().use { it.readText() }
                 val myType = object : TypeToken<List<Goal>>() {}.type
                 goals = gson.fromJson<ArrayList<Goal>>(inputString, myType)
@@ -118,21 +118,21 @@ class AddGoalsActivity : AppCompatActivity() { // TimePickerDialog.OnTimeSetList
 
             goals.add(newGoal)
 
-            //gson.toJson(newGoal, FileWriter("goals.json"))
+            //gson.toJson(newGoal, FileWriter(GOALS_FILE))
 
             // Convert from Goals array to json
             val jsonOutput = gson.toJson(goals)
 
-            val filename = "goals.json"
+            val filename = GOALS_FILE
             //val fileContents = "Hello world!"
             openFileOutput(filename, Context.MODE_PRIVATE).use {
                 it.write(jsonOutput.toByteArray())
             }
             //
 
-            tex.setText(jsonOutput)
+            //tex.setText(jsonOutput)
             //tex.setText("Goal added")
-            //tex.setText(outputText)
+            tex.setText(outputText)
         }
     }
 

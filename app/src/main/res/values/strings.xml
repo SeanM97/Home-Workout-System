@@ -11,6 +11,8 @@
         <item>Duration of Walk in Minutes (IMU)</item>
         <item>Number of Reps (KINECT)</item>
         <item>Number of Jumping Jacks (KINECT)</item>
+        <item>Workout Grade (KINECT)</item>
+        <item>Workout Time in Minutes (KINECT)</item>
     </string-array>
     <string name="deadline">Deadline</string>
     <string name="add_goal">Add Goal</string>
@@ -20,4 +22,15 @@
     <string name="settings">Settings</string>
     <string name="test">Test</string>
     <string name="view_events">View Events</string>
+    <string name="update">Update</string>
+    <string name="delete_event">Delete Event</string>
+    <string name="title_activity_view_events">ViewEventsActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 </resources>

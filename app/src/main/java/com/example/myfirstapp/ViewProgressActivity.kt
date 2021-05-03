@@ -25,11 +25,11 @@ class ViewProgressActivity : AppCompatActivity() {
 
         val gson = Gson()
 
-        // Check if goals.json exists
-        val file =  File(getApplicationContext().filesDir, "goals.json");
+        // Check if GOALS_FILE exists
+        val file =  File(getApplicationContext().filesDir, GOALS_FILE);
         if(file.exists()) {
             // Exists, get json data from it
-            val inputStream: InputStream = File(getApplicationContext().filesDir, "goals.json").inputStream()
+            val inputStream: InputStream = File(getApplicationContext().filesDir, GOALS_FILE).inputStream()
             val inputString = inputStream.bufferedReader().use { it.readText() }
             val myType = object : TypeToken<List<Goal>>() {}.type
             goals = gson.fromJson<ArrayList<Goal>>(inputString, myType) // convert from json to Goals array
