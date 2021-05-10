@@ -3,6 +3,7 @@ package com.example.myfirstapp
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.CalendarView
@@ -24,6 +25,7 @@ import java.util.*
 const val EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE"
 const val DEFAULT_ADDRESS = "http://76.170.169.89:8080"
 const val EVENTS_FILE = "events.json" // All events recorded by server
+const val DELETED_EVENTS_FILE = "deleted_events.json" // All deleted events recorded by user
 const val GOALS_FILE = "goals.json" // All goals recorded by user
 const val SERVER_ADDRESS_FILE = "server_address.json" // Server address
 
@@ -32,31 +34,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        var fileD : File
+        // Delete goals file
+        //var fileD = File(getApplicationContext().filesDir, GOALS_FILE)
+        //fileD.delete();
+        // Delete events file
+        //fileD = File(getApplicationContext().filesDir, EVENTS_FILE)
+        //fileD.delete();
+        // Delete deleted events file
+        //fileD = File(getApplicationContext().filesDir, DELETED_EVENTS_FILE)
+        //fileD.delete();
+        // Delete server address file
+        //fileD = File(getApplicationContext().filesDir, SERVER_ADDRESS_FILE)
+        //fileD.delete();
+
         refresh()
         val gson = Gson()
 
         // Now that we have obtained events.json, read it.
-        var events: ArrayList<Goal>
+        var events: ArrayList<Goal> = getEvents()
 
-        // Check if events.json exists
-        val file =  File(getApplicationContext().filesDir, EVENTS_FILE)
-        if (file.exists()) {
-            // Exists, get json data from it
-            val inputStream: InputStream = File(getApplicationContext().filesDir, EVENTS_FILE).inputStream()
-            val inputString = inputStream.bufferedReader().use { it.readText() }
-            val myType = object : TypeToken<List<Goal>>() {}.type
-            //val serverStatus2 = findViewById<TextView>(R.id.server_status2)
-            //serverStatus2.setText(inputString)
-            //events = gson.fromJson<ArrayList<Goal>>(inputString, myType) // convert from json to Goals array
-
-
-        //events = ArrayList<Goal>()
-        }
-        else {
-            // Does not exist
-            events = ArrayList<Goal>()
-        }
-
+        Log.i("Events size:", "" + events.size)
 
         // Now read GOALS_FILE
         var goals: ArrayList<Goal>
@@ -74,12 +72,13 @@ class MainActivity : AppCompatActivity() {
             goals = ArrayList<Goal>()
         }
 
-        events = goals;
+        //events = goals;
 
-        var changesMadeToGoals: Boolean = false
+        //var changesMadeToGoals: Boolean = false
 
-        /*
         // Now we have to mark goals as met or not.
+        // OLD CODE, DO NOT USE
+        /*
         for (i in goals.indices) {
             if (!goals.get(i).goalMet) {
                 for (j in events.indices) {
@@ -101,38 +100,39 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        */
+         */
 
         // Now we have to mark goals as met or not.
         for (i in goals.indices) {
-                for (j in events.indices) {
-                    // Check if new activity can check off this goal.
-                    if ((goals.get(i).goalId == events.get(j).goalId) && (events.get(j).date <= goals.get(i).date) && events.get(j).goalMet) {
-                        if (goals.get(i).goalId == 0) {
-                            if (events.get(j).target <= goals.get(i).target) {
-                                events.get(j).goalMet = false
-                            }
+            goals.get(i).goalMet = false
+            for (j in events.indices) {
+                // Check if new activity can check off this goal.
+                if ((goals.get(i).goalId == events.get(j).goalId) && (events.get(j).date <= goals.get(i).date) && events.get(j).goalMet) {
+                    if (goals.get(i).goalId == 0 || goals.get(i).goalId == 5 || goals.get(i).goalId == 7) {
+                        if (events.get(j).target <= goals.get(i).target) {
+                            events.get(j).goalMet = false
+                            goals.get(i).goalMet = true
+                            break
                         }
-                        else {
-                            if (events.get(j).target >= goals.get(i).target) {
-                                events.get(j).goalMet = false
-                            }
+                    }
+                    else {
+                        if (events.get(j).target >= goals.get(i).target) {
+                            events.get(j).goalMet = false
+                            goals.get(i).goalMet = true
+                            break
                         }
                     }
                 }
+            }
         }
 
         // Rewrite GOALS_FILE with new changes made to it, if any changes were made
-        /* Actually, do not write changes to goals file
-        if (changesMadeToGoals) {
-            val jsonOutput = gson.toJson(goals)
+        val jsonOutput = gson.toJson(goals)
 
-            val filename = GOALS_FILE
-            openFileOutput(filename, Context.MODE_PRIVATE).use {
-                it.write(jsonOutput.toByteArray())
-            }
+        val filename = GOALS_FILE
+        openFileOutput(filename, Context.MODE_PRIVATE).use {
+            it.write(jsonOutput.toByteArray())
         }
-        */
     }
 
     /** Called when the user taps the Send button */
@@ -226,17 +226,20 @@ class MainActivity : AppCompatActivity() {
 
         // Instantiate the RequestQueue.
         val queue = Volley.newRequestQueue(this)
-        val sd = "{{\"date\":1620002920978,\"goalId\":0,\"goalMet\":false,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5},{\"date\":1620002920978,\"goalId\":0,\"goalMet\":false,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5}}"
+        val sd = "[{\"date\":1620002920978,\"goalId\":0,\"goalMet\":true,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5},{\"date\":1620002920978,\"goalId\":0,\"goalMet\":true,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5}]"
         // Request a string response from the provided URL.
         val stringRequest = StringRequest(Request.Method.GET, url,
                 Response.Listener<String> { response ->
                     // Display the first 500 characters of the response string.
                     //serverStatus.setText(response.toString())
                     serverStatus.setText("OK")
-                    //parseServerData(response.toString())
-                    parseServerData(sd);
+                    storeServerData(response.toString())
+                    storeServerData(sd);
                                           },
-                Response.ErrorListener { serverStatus.text = "Failed" })
+                Response.ErrorListener {
+                    serverStatus.text = "Failed";
+                    storeServerData(sd); // FOR TESTING ONLY, REMOVE FOR ACTUAL THING.
+                })
 
         // Add the request to the RequestQueue.
         queue.add(stringRequest)
@@ -246,6 +249,7 @@ class MainActivity : AppCompatActivity() {
     fun refresh(view: View) {
         refresh()
 
+        /*
         // temporary, remove when server data parsing gets fixed
         var goals: ArrayList<Goal>
         var goalsToDisplay: ArrayList<Goal>
@@ -284,9 +288,11 @@ class MainActivity : AppCompatActivity() {
             it.write(jsonOutput.toByteArray())
         }
 
+         */
+
     }
 
-    private fun parseServerData(serverData: String) {
+    private fun storeServerData(serverData: String) {
         val gson = Gson()
 
         val filename = EVENTS_FILE
@@ -295,5 +301,61 @@ class MainActivity : AppCompatActivity() {
             it.write(serverData.toByteArray())
         }
 
+    }
+
+    private fun getEvents(): ArrayList<Goal> {
+        val gson = Gson()
+        var events: ArrayList<Goal>
+        val file = File(getApplicationContext().filesDir, EVENTS_FILE);
+        if (file.exists()) {
+            // Exists, get json data from it
+            val inputStream: InputStream =
+                File(getApplicationContext().filesDir, EVENTS_FILE).inputStream()
+            val inputString = inputStream.bufferedReader().use { it.readText() }
+            val myType = object : TypeToken<List<Goal>>() {}.type
+            events = gson.fromJson<ArrayList<Goal>>(
+                inputString,
+                myType
+            ) // convert from json to Goals array
+        } else {
+            // Does not exist
+            events = ArrayList<Goal>()
+        }
+
+        var deletedEvents: ArrayList<Goal>
+        val deletedEventsFile = File(getApplicationContext().filesDir, DELETED_EVENTS_FILE);
+        if (deletedEventsFile.exists()) {
+            // Exists, get json data from it
+            val inputStream: InputStream =
+                File(getApplicationContext().filesDir, DELETED_EVENTS_FILE).inputStream()
+            val inputString = inputStream.bufferedReader().use { it.readText() }
+            val myType = object : TypeToken<List<Goal>>() {}.type
+            deletedEvents = gson.fromJson<ArrayList<Goal>>(
+                inputString,
+                myType
+            ) // convert from json to Goals array
+        } else {
+            // Does not exist
+            deletedEvents = ArrayList<Goal>()
+        }
+
+        var removedAnEvent: Boolean = true
+        while (removedAnEvent) {
+            removedAnEvent = false
+            for (i in events.indices) {
+                for (j in deletedEvents.indices) {
+                    if (events.get(i).equals(deletedEvents.get(j))) {
+                        events.removeAt(i)
+                        deletedEvents.removeAt(j)
+                        removedAnEvent = true
+                        break
+                    }
+                }
+                if (removedAnEvent) {
+                    break
+                }
+            }
+        }
+        return events;
     }
 }

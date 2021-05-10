@@ -38,28 +38,10 @@ class ViewEventsActivity : AppCompatActivity() {
         //val inputString = inputStream.bufferedReader().use { it.readText() }
         //tv12.setText(inputString)
 
-        var events: ArrayList<Goal>
+        var events: ArrayList<Goal> = getEvents()
         var eventsToDisplay: ArrayList<Goal>
 
         val gson = Gson()
-
-        // Check if EVENTS_FILE exists
-        val file = File(getApplicationContext().filesDir, EVENTS_FILE);
-        //file.readLines()
-        if (file.exists()) {
-            // Exists, get json data from it
-            val inputStream: InputStream =
-                File(getApplicationContext().filesDir, EVENTS_FILE).inputStream()
-            val inputString = inputStream.bufferedReader().use { it.readText() }
-            val myType = object : TypeToken<List<Goal>>() {}.type
-            events = gson.fromJson<ArrayList<Goal>>(
-                inputString,
-                myType
-            ) // convert from json to Goals array
-        } else {
-            // Does not exist
-            events = ArrayList<Goal>()
-        }
 
         val c = findViewById<CalendarView>(R.id.calendarView3)
         if (events.size > 0) {
@@ -123,15 +105,21 @@ class ViewEventsActivity : AppCompatActivity() {
                     }
                     spinnerString += " "
                     if (events.get(i).goalId == 0) {
-                        spinnerString += "Weigh at most " + events.get(i).target + " lbs (Smart Scale)"
+                        spinnerString += "Weighed " + events.get(i).target + " lbs (Smart Scale)"
                     } else if (events.get(i).goalId == 1) {
-                        spinnerString += "Walk at least " + events.get(i).target + " steps (IMU)"
+                        spinnerString += "Walked " + events.get(i).target + " steps (IMU)"
                     } else if (events.get(i).goalId == 2) {
-                        spinnerString += "Walk for at least " + events.get(i).target + " minutes (IMU)"
+                        spinnerString += "Walk for " + events.get(i).target + " minutes (IMU)"
                     } else if (events.get(i).goalId == 3) {
-                        spinnerString += "Do at least " + events.get(i).target + " reps (KINECT)"
+                        spinnerString += "Did " + events.get(i).target + " reps (KINECT)"
                     } else if (events.get(i).goalId == 4) {
-                        spinnerString += "Do at least " + events.get(i).target + " jumping jacks (KINECT)"
+                        spinnerString += "Did " + events.get(i).target + " jumping jacks (KINECT)"
+                    } else if (events.get(i).goalId == 5) {
+                        spinnerString += "Earned workout grade (0 is highest) of " + events.get(i).target + " (KINECT)"
+                    } else if (events.get(i).goalId == 6) {
+                        spinnerString += "Workout time was " + events.get(i).target + " minutes (KINECT)"
+                    } else if (events.get(i).goalId == 7) {
+                        spinnerString += "Heart rate was " + events.get(i).target + " BPM (KINECT)"
                     }
                     eventsInSpinner.add(spinnerString)
                 }
@@ -206,23 +194,30 @@ class ViewEventsActivity : AppCompatActivity() {
                         }
                         spinnerString += " "
                         if (events.get(i).goalId == 0) {
-                            spinnerString += "Weigh at most " + events.get(i).target + " lbs (Smart Scale)"
+                            spinnerString += "Weighed " + events.get(i).target + " lbs (Smart Scale)"
                         } else if (events.get(i).goalId == 1) {
-                            spinnerString += "Walk at least " + events.get(i).target + " steps (IMU)"
+                            spinnerString += "Walked " + events.get(i).target + " steps (IMU)"
                         } else if (events.get(i).goalId == 2) {
-                            spinnerString += "Walk for at least " + events.get(i).target + " minutes (IMU)"
+                            spinnerString += "Walk for " + events.get(i).target + " minutes (IMU)"
                         } else if (events.get(i).goalId == 3) {
-                            spinnerString += "Do at least " + events.get(i).target + " reps (KINECT)"
+                            spinnerString += "Did " + events.get(i).target + " reps (KINECT)"
                         } else if (events.get(i).goalId == 4) {
-                            spinnerString += "Do at least " + events.get(i).target + " jumping jacks (KINECT)"
+                            spinnerString += "Did " + events.get(i).target + " jumping jacks (KINECT)"
+                        } else if (events.get(i).goalId == 5) {
+                            spinnerString += "Earned workout grade (0 is highest) of " + events.get(
+                                i
+                            ).target + " (KINECT)"
+                        } else if (events.get(i).goalId == 6) {
+                            spinnerString += "Workout time was " + events.get(i).target + " minutes (KINECT)"
+                        } else if (events.get(i).goalId == 7) {
+                            spinnerString += "Heart rate was " + events.get(i).target + " BPM (KINECT)"
                         }
                         eventsInSpinner.add(spinnerString)
                     }
                 }
                 if (eventsInSpinner.size == 0) {
                     spinner.visibility = View.INVISIBLE
-                }
-                else {
+                } else {
                     spinner.visibility = View.VISIBLE
                 }
 
@@ -232,7 +227,11 @@ class ViewEventsActivity : AppCompatActivity() {
                 // Creating adapter for spinner
                 // Creating adapter for spinner
                 val dataAdapter: ArrayAdapter<String> =
-                    ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, eventsInSpinner)
+                    ArrayAdapter<String>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        eventsInSpinner
+                    )
 
                 // Drop down layout style - list view with radio button
 
@@ -243,8 +242,7 @@ class ViewEventsActivity : AppCompatActivity() {
                 //val dateString = "" + c.getDate()
                 // tv12.setText(dateString)
             }
-        }
-        else {
+        } else {
             spinner.visibility = View.INVISIBLE
             c.visibility = View.INVISIBLE
             val btn = findViewById<Button>(com.example.myfirstapp.R.id.deleteEvent)
@@ -257,22 +255,11 @@ class ViewEventsActivity : AppCompatActivity() {
     fun deleteEvent(v: View) {
         val c = findViewById<CalendarView>(com.example.myfirstapp.R.id.calendarView3)
         val spinner: Spinner = findViewById(R.id.spinner3)
-        var events: ArrayList<Goal>
+
         val gson = Gson()
 
-        // Check if EVENTS_FILE exists
-        val file =  File(getApplicationContext().filesDir, EVENTS_FILE);
-        if(file.exists()) {
-            // Exists, get json data from it
-            val inputStream: InputStream = File(getApplicationContext().filesDir, EVENTS_FILE).inputStream()
-            val inputString = inputStream.bufferedReader().use { it.readText() }
-            val myType = object : TypeToken<List<Goal>>() {}.type
-            events = gson.fromJson<ArrayList<Goal>>(inputString, myType) // convert from json to Goals array
-        }
-        else {
-            // Does not exist
-            events = ArrayList<Goal>()
-        }
+        var events: ArrayList<Goal>
+        events = getEvents()
 
         if (events.size > 0) {
 
@@ -291,18 +278,99 @@ class ViewEventsActivity : AppCompatActivity() {
                 }
             }
 
+            /*
             events.removeAt(eventsIndices.get(spinner.getSelectedItemPosition()))
 
             val jsonOutput = gson.toJson(events)
-
 
             val filename = EVENTS_FILE
             openFileOutput(filename, Context.MODE_PRIVATE).use {
                 it.write(jsonOutput.toByteArray())
             }
+             */
+            var deletedEvents: ArrayList<Goal>
+            val deletedEventsFile = File(getApplicationContext().filesDir, DELETED_EVENTS_FILE);
+            if (deletedEventsFile.exists()) {
+                // Exists, get json data from it
+                val inputStream: InputStream =
+                    File(getApplicationContext().filesDir, DELETED_EVENTS_FILE).inputStream()
+                val inputString = inputStream.bufferedReader().use { it.readText() }
+                val myType = object : TypeToken<List<Goal>>() {}.type
+                deletedEvents = gson.fromJson<ArrayList<Goal>>(
+                    inputString,
+                    myType
+                ) // convert from json to Goals array
+            } else {
+                // Does not exist
+                deletedEvents = ArrayList<Goal>()
+            }
+            deletedEvents.add(events.get(eventsIndices.get(spinner.getSelectedItemPosition())))
 
-            finish();
-            startActivity(getIntent());
+            val jsonOutput = gson.toJson(deletedEvents)
+
+            val filename = DELETED_EVENTS_FILE
+            openFileOutput(filename, Context.MODE_PRIVATE).use {
+                it.write(jsonOutput.toByteArray())
+
+                finish();
+                startActivity(getIntent());
+            }
         }
     }
-}
+
+    fun getEvents(): ArrayList<Goal> {
+        val gson = Gson()
+        var events: ArrayList<Goal>
+        val file = File(getApplicationContext().filesDir, EVENTS_FILE);
+        if (file.exists()) {
+            // Exists, get json data from it
+                val inputStream: InputStream =
+                    File(getApplicationContext().filesDir, EVENTS_FILE).inputStream()
+                val inputString = inputStream.bufferedReader().use { it.readText() }
+                val myType = object : TypeToken<List<Goal>>() {}.type
+                events = gson.fromJson<ArrayList<Goal>>(
+                    inputString,
+                    myType
+                ) // convert from json to Goals array
+            } else {
+                // Does not exist
+                events = ArrayList<Goal>()
+            }
+
+            var deletedEvents: ArrayList<Goal>
+            val deletedEventsFile = File(getApplicationContext().filesDir, DELETED_EVENTS_FILE);
+            if (deletedEventsFile.exists()) {
+                // Exists, get json data from it
+                val inputStream: InputStream =
+                    File(getApplicationContext().filesDir, DELETED_EVENTS_FILE).inputStream()
+                val inputString = inputStream.bufferedReader().use { it.readText() }
+                val myType = object : TypeToken<List<Goal>>() {}.type
+                deletedEvents = gson.fromJson<ArrayList<Goal>>(
+                    inputString,
+                    myType
+                ) // convert from json to Goals array
+            } else {
+                // Does not exist
+                deletedEvents = ArrayList<Goal>()
+            }
+
+            var removedAnEvent: Boolean = true
+            while (removedAnEvent) {
+                removedAnEvent = false
+                for (i in events.indices) {
+                    for (j in deletedEvents.indices) {
+                        if (events.get(i).equals(deletedEvents.get(j))) {
+                            events.removeAt(i)
+                            deletedEvents.removeAt(j)
+                            removedAnEvent = true
+                            break
+                        }
+                    }
+                    if (removedAnEvent) {
+                        break
+                    }
+                }
+            }
+            return events;
+        }
+    }
