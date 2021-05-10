@@ -13,6 +13,7 @@
         <item>Number of Jumping Jacks (KINECT)</item>
         <item>Workout Grade (KINECT)</item>
         <item>Workout Time in Minutes (KINECT)</item>
+        <item>Heart Rate (Smart Watch)</item>
     </string-array>
     <string name="deadline">Deadline</string>
     <string name="add_goal">Add Goal</string>

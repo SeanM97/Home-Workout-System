@@ -64,6 +64,9 @@ class MySettings : AppCompatActivity() {
                 //serverStatus.text = "That didn't work!" })
             })
         // Add the request to the RequestQueue.
+
+        //serverStatus.setText(stringRequest.toString())
+
         queue.add(stringRequest)
     }
 

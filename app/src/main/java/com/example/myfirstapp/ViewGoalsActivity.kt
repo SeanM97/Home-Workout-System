@@ -127,6 +127,12 @@ class ViewGoalsActivity : AppCompatActivity() {
                         spinnerString += "Do at least " + goals.get(i).target + " reps (KINECT)"
                     } else if (goals.get(i).goalId == 4) {
                         spinnerString += "Do at least " + goals.get(i).target + " jumping jacks (KINECT)"
+                    } else if (goals.get(i).goalId == 5) {
+                        spinnerString += "Workout grade at least (0 is highest) " + goals.get(i).target + " (KINECT)"
+                    } else if (goals.get(i).goalId == 6) {
+                        spinnerString += "Workout time in minutes at least " + goals.get(i).target + " (KINECT)"
+                    } else if (goals.get(i).goalId == 7) {
+                        spinnerString += "Heart rate at most " + goals.get(i).target + " (KINECT)"
                     }
                     goalsInSpinner.add(spinnerString)
                 }
@@ -203,6 +209,12 @@ class ViewGoalsActivity : AppCompatActivity() {
                             spinnerString += "Do at least " + goals.get(i).target + " reps (KINECT)"
                         } else if (goals.get(i).goalId == 4) {
                             spinnerString += "Do at least " + goals.get(i).target + " jumping jacks (KINECT)"
+                        } else if (goals.get(i).goalId == 5) {
+                            spinnerString += "Workout grade at least (0 is highest) " + goals.get(i).target + "  (KINECT)"
+                        } else if (goals.get(i).goalId == 6) {
+                            spinnerString += "Workout time in minutes at least " + goals.get(i).target + " (KINECT)"
+                        } else if (goals.get(i).goalId == 7) {
+                            spinnerString += "Heart rate at most " + goals.get(i).target + " (KINECT)"
                         }
                         goalsInSpinner.add(spinnerString)
                     }

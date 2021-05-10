@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.CalendarView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.Request
@@ -15,6 +17,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
 import java.io.InputStream
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 const val EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE"
@@ -29,27 +33,28 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         refresh()
-
         val gson = Gson()
 
+        // Now that we have obtained events.json, read it.
+        var events: ArrayList<Goal>
 
-        //This section of code might not be necessary as data from server is not stored immediately into a file.
-
-        // Now that we have obtained activities.json, read it.
-        var activities: ArrayList<Goal>
-
-        // Check if activities.json exists
-        val file =  File(getApplicationContext().filesDir, "activities.json");
-        if(file.exists()) {
+        // Check if events.json exists
+        val file =  File(getApplicationContext().filesDir, EVENTS_FILE)
+        if (file.exists()) {
             // Exists, get json data from it
-            val inputStream: InputStream = File(getApplicationContext().filesDir, "activities.json").inputStream()
+            val inputStream: InputStream = File(getApplicationContext().filesDir, EVENTS_FILE).inputStream()
             val inputString = inputStream.bufferedReader().use { it.readText() }
             val myType = object : TypeToken<List<Goal>>() {}.type
-            activities = gson.fromJson<ArrayList<Goal>>(inputString, myType) // convert from json to Goals array
+            //val serverStatus2 = findViewById<TextView>(R.id.server_status2)
+            //serverStatus2.setText(inputString)
+            //events = gson.fromJson<ArrayList<Goal>>(inputString, myType) // convert from json to Goals array
+
+
+        //events = ArrayList<Goal>()
         }
         else {
             // Does not exist
-            activities = ArrayList<Goal>()
+            events = ArrayList<Goal>()
         }
 
 
@@ -57,7 +62,6 @@ class MainActivity : AppCompatActivity() {
         var goals: ArrayList<Goal>
         // Check if GOALS_FILE exists
         val file2 =  File(getApplicationContext().filesDir, GOALS_FILE);
-        //file2.readLines()
         if(file2.exists()) {
             // Exists, get json data from it
             val inputStream: InputStream = File(getApplicationContext().filesDir, GOALS_FILE).inputStream()
@@ -70,23 +74,25 @@ class MainActivity : AppCompatActivity() {
             goals = ArrayList<Goal>()
         }
 
+        events = goals;
+
         var changesMadeToGoals: Boolean = false
+
+        /*
         // Now we have to mark goals as met or not.
         for (i in goals.indices) {
             if (!goals.get(i).goalMet) {
-                for (j in activities.indices) {
+                for (j in events.indices) {
                     // Check if new activity can check off this goal.
-                    if ((goals.get(i).goalId == activities.get(j).goalId) && (activities.get(j).date <= goals.get(
-                            i
-                        ).date) && !goals.get(i).goalMet) {
+                    if ((goals.get(i).goalId == events.get(j).goalId) && (events.get(j).date <= goals.get(i).date) && !goals.get(i).goalMet) {
                         if (goals.get(i).goalId == 0) {
-                            if (activities.get(j).target <= goals.get(i).target) {
+                            if (events.get(j).target <= goals.get(i).target) {
                                 goals.get(i).goalMet = true
                                 changesMadeToGoals = true
                             }
                         }
                         else {
-                            if (activities.get(j).target >= goals.get(i).target) {
+                            if (events.get(j).target >= goals.get(i).target) {
                                 goals.get(i).goalMet = true
                                 changesMadeToGoals = true
                             }
@@ -95,7 +101,29 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        */
+
+        // Now we have to mark goals as met or not.
+        for (i in goals.indices) {
+                for (j in events.indices) {
+                    // Check if new activity can check off this goal.
+                    if ((goals.get(i).goalId == events.get(j).goalId) && (events.get(j).date <= goals.get(i).date) && events.get(j).goalMet) {
+                        if (goals.get(i).goalId == 0) {
+                            if (events.get(j).target <= goals.get(i).target) {
+                                events.get(j).goalMet = false
+                            }
+                        }
+                        else {
+                            if (events.get(j).target >= goals.get(i).target) {
+                                events.get(j).goalMet = false
+                            }
+                        }
+                    }
+                }
+        }
+
         // Rewrite GOALS_FILE with new changes made to it, if any changes were made
+        /* Actually, do not write changes to goals file
         if (changesMadeToGoals) {
             val jsonOutput = gson.toJson(goals)
 
@@ -104,6 +132,7 @@ class MainActivity : AppCompatActivity() {
                 it.write(jsonOutput.toByteArray())
             }
         }
+        */
     }
 
     /** Called when the user taps the Send button */
@@ -197,14 +226,16 @@ class MainActivity : AppCompatActivity() {
 
         // Instantiate the RequestQueue.
         val queue = Volley.newRequestQueue(this)
-
+        val sd = "{{\"date\":1620002920978,\"goalId\":0,\"goalMet\":false,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5},{\"date\":1620002920978,\"goalId\":0,\"goalMet\":false,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5}}"
         // Request a string response from the provided URL.
         val stringRequest = StringRequest(Request.Method.GET, url,
                 Response.Listener<String> { response ->
                     // Display the first 500 characters of the response string.
                     //serverStatus.setText(response.toString())
                     serverStatus.setText("OK")
-                },
+                    //parseServerData(response.toString())
+                    parseServerData(sd);
+                                          },
                 Response.ErrorListener { serverStatus.text = "Failed" })
 
         // Add the request to the RequestQueue.
@@ -214,5 +245,55 @@ class MainActivity : AppCompatActivity() {
     /** Called when the user taps the Refresh button */
     fun refresh(view: View) {
         refresh()
+
+        // temporary, remove when server data parsing gets fixed
+        var goals: ArrayList<Goal>
+        var goalsToDisplay: ArrayList<Goal>
+
+        val gson = Gson()
+
+        // Check if GOALS_FILE exists
+        val file = File(getApplicationContext().filesDir, GOALS_FILE);
+        //file.readLines()
+        if (file.exists()) {
+            // Exists, get json data from it
+            val inputStream: InputStream =
+                File(getApplicationContext().filesDir, GOALS_FILE).inputStream()
+            val inputString = inputStream.bufferedReader().use { it.readText() }
+            val myType = object : TypeToken<List<Goal>>() {}.type
+            goals = gson.fromJson<ArrayList<Goal>>(
+                inputString,
+                myType
+            ) // convert from json to Goals array
+        } else {
+            // Does not exist
+            goals = ArrayList<Goal>()
+        }
+
+        if (goals.size > 0) {
+            for (i in goals.indices) {
+                goals.get(i).goalMet = true
+            }
+        }
+
+        val jsonOutput = gson.toJson(goals)
+
+        val filename = GOALS_FILE
+        //val fileContents = "Hello world!"
+        openFileOutput(filename, Context.MODE_PRIVATE).use {
+            it.write(jsonOutput.toByteArray())
+        }
+
+    }
+
+    private fun parseServerData(serverData: String) {
+        val gson = Gson()
+
+        val filename = EVENTS_FILE
+        //val fileContents = "Hello world!"
+        openFileOutput(filename, Context.MODE_PRIVATE).use {
+            it.write(serverData.toByteArray())
+        }
+
     }
 }

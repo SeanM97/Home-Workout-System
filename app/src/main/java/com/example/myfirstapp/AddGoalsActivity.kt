@@ -103,7 +103,7 @@ class AddGoalsActivity : AppCompatActivity() { // TimePickerDialog.OnTimeSetList
 
             // Check if GOALS_FILE exists
             val file =  File(getApplicationContext().filesDir, GOALS_FILE);
-            file.readLines()
+            //file.readLines()
             if(file.exists()) {
                 // Exists
                 val inputStream: InputStream = File(getApplicationContext().filesDir, GOALS_FILE).inputStream()
