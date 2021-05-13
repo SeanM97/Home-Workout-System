@@ -51,13 +51,17 @@ class MySettings : AppCompatActivity() {
 
         // Instantiate the RequestQueue.
         val queue = Volley.newRequestQueue(this)
-
+        var sd: String
         // Request a string response from the provided URL.
         val stringRequest = StringRequest(
             Request.Method.GET, url,
             Response.Listener<String> { response ->
                 // Display the first 500 characters of the response string.
-                serverStatus.setText(response.toString())
+
+                sd = response.toString().toString().replace("goalID", "goalId")
+                sd = sd.replace(",\"goalId\":", "000,\"goalId\":")
+
+                serverStatus.setText(sd)
             },
             Response.ErrorListener { e ->
                 serverStatus.text = e.toString()

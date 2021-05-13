@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         //fileD = File(getApplicationContext().filesDir, SERVER_ADDRESS_FILE)
         //fileD.delete();
 
-        refresh()
+        //refresh()
         val gson = Gson()
 
         // Now that we have obtained events.json, read it.
@@ -226,14 +226,18 @@ class MainActivity : AppCompatActivity() {
 
         // Instantiate the RequestQueue.
         val queue = Volley.newRequestQueue(this)
-        val sd = "[{\"date\":1620002920978,\"goalId\":0,\"goalMet\":true,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5},{\"date\":1620002920978,\"goalId\":0,\"goalMet\":true,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5}]"
+        var sd = "[{\"date\":1620002920978,\"goalId\":0,\"goalMet\":true,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5},{\"date\":1620002920978,\"goalId\":0,\"goalMet\":true,\"hours\":4,isAm\":false,\"minutes\":48,\"target\":5}]"
         // Request a string response from the provided URL.
         val stringRequest = StringRequest(Request.Method.GET, url,
                 Response.Listener<String> { response ->
                     // Display the first 500 characters of the response string.
                     //serverStatus.setText(response.toString())
                     serverStatus.setText("OK")
-                    storeServerData(response.toString())
+
+                    sd = response.toString().toString().replace("goalID", "goalId")
+                    sd = sd.replace(",\"goalId\":", "000,\"goalId\":")
+
+                    //storeServerData(response.toString())
                     storeServerData(sd);
                                           },
                 Response.ErrorListener {
@@ -293,6 +297,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun storeServerData(serverData: String) {
+        Log.i("serverData", serverData)
+
         val gson = Gson()
 
         val filename = EVENTS_FILE
@@ -312,11 +318,20 @@ class MainActivity : AppCompatActivity() {
             val inputStream: InputStream =
                 File(getApplicationContext().filesDir, EVENTS_FILE).inputStream()
             val inputString = inputStream.bufferedReader().use { it.readText() }
+
+            Log.i("tag0", inputString)
+
             val myType = object : TypeToken<List<Goal>>() {}.type
             events = gson.fromJson<ArrayList<Goal>>(
                 inputString,
                 myType
             ) // convert from json to Goals array
+
+            Log.i("tag0", inputString)
+            for (i in events.indices) {
+                Log.i("tag1", events.get(i).toString())
+            }
+
         } else {
             // Does not exist
             events = ArrayList<Goal>()
